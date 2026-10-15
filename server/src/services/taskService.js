@@ -19,3 +19,33 @@ export function createTask(data) {
 
     return task;
 }
+
+export function getTaskById(id) {
+    return tasks.find((task) => task.id === id);
+}
+
+export function updateTask(id, data) {
+    const task = tasks.find((task) => task.id === id);
+
+    if (!task) {
+        return undefined;
+    }
+
+    if (data.title !== undefined) {
+        task.title = data.title.trim();
+    }
+
+    if (data.description !== undefined) {
+        task.description = data.description.trim();
+    }
+
+    if (data.priority !== undefined) {
+        task.priority = data.priority;
+    }
+
+    if (data.status !== undefined) {
+        task.status = data.status;
+    }
+
+    return task;
+}
