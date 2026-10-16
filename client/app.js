@@ -25,6 +25,7 @@ async function getTasks() {
 }
 
 // Mostrar las tareas en la interfaz
+
 function renderTasks(tasks) {
     taskList.replaceChildren();
 
@@ -49,10 +50,76 @@ function renderTasks(tasks) {
         details.textContent =
             `Prioridad: ${task.priority} | Estado: ${task.status}`;
 
-        item.append(title, description, details);
+        const statusButton = document.createElement("button");
+        statusButton.textContent =
+            task.status === "completed"
+                ? "Marcar pendiente"
+                : "Completar tarea";
+
+        statusButton.addEventListener("click", async () => {
+            const newStatus =
+                task.status === "completed" ? "pending" : "completed";
+
+            await updateTask(task.id, { status: newStatus });
+            await getTasks();
+        });
+
+        const editButton = document.createElement("button");
+        editButton.textContent = "Editar";
+
+        editButton.addEventListener("click", async () => {
+            const newTitle = prompt("Nuevo título:", task.title);
+
+            if (newTitle === null || !newTitle.trim()) {
+                return;
+            }
+
+            const newDescription = prompt(
+                "Nueva descripción:",
+                task.description
+            );
+
+            if (newDescription === null) {
+                return;
+            }
+
+            await updateTask(task.id, {
+                title: newTitle.trim(),
+                description: newDescription
+            });
+
+            await getTasks();
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Eliminar";
+
+        deleteButton.addEventListener("click", async () => {
+            const confirmed = confirm(
+                `¿Quieres eliminar "${task.title}"?`
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            await deleteTask(task.id);
+            await getTasks();
+        });
+
+        item.append(
+            title,
+            description,
+            details,
+            statusButton,
+            editButton,
+            deleteButton
+        );
+
         taskList.append(item);
     });
 }
+
 
 // Crear una tarea mediante POST
 async function createTask(taskData) {
@@ -72,6 +139,40 @@ async function createTask(taskData) {
 
     return result;
 }
+
+
+async function updateTask(id, changes) {
+    const response = await fetch(`${API_URL}/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(changes)
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(result.error || "No se pudo actualizar la tarea.");
+    }
+
+    return result;
+}
+
+async function deleteTask(id) {
+    const response = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE"
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(result.error || "No se pudo eliminar la tarea.");
+    }
+
+    return result;
+}
+
 
 // Procesar el envío del formulario
 taskForm.addEventListener("submit", async (event) => {

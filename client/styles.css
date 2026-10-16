@@ -81,4 +81,7 @@ button:hover {
     border: 1px solid #e1e5ea;
     border-radius: 8px;
     overflow-wrap: anywhere;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
