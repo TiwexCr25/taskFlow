@@ -1,63 +1,66 @@
-let tasks = [];
-let nextId = 1;
+import { db } from "../database/db.js";
 
 export function getAllTasks() {
-    return tasks;
-}
-
-export function createTask(data) {
-    const task = {
-        id: nextId++,
-        title: data.title.trim(),
-        description: data.description?.trim() ?? "",
-        priority: data.priority ?? "medium",
-        status: "pending",
-        createdAt: new Date().toISOString()
-    };
-
-    tasks.push(task);
-
-    return task;
+    return db.prepare(`
+    SELECT * FROM tasks
+    ORDER BY id DESC
+  `).all();
 }
 
 export function getTaskById(id) {
-    return tasks.find((task) => task.id === id);
+    return db.prepare(`
+    SELECT * FROM tasks
+    WHERE id = ?
+  `).get(id);
+}
+
+export function createTask(data) {
+    const title = data.title.trim();
+    const description = data.description?.trim() ?? "";
+    const priority = data.priority ?? "medium";
+    const status = "pending";
+    const createdAt = new Date().toISOString();
+
+    const result = db.prepare(`
+    INSERT INTO tasks (title, description, priority, status, createdAt)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(title, description, priority, status, createdAt);
+
+    return getTaskById(Number(result.lastInsertRowid));
 }
 
 export function updateTask(id, data) {
-    const task = tasks.find((task) => task.id === id);
+    const currentTask = getTaskById(id);
+
+    if (!currentTask) {
+        return undefined;
+    }
+
+    const title = data.title ?? currentTask.title;
+    const description = data.description ?? currentTask.description;
+    const priority = data.priority ?? currentTask.priority;
+    const status = data.status ?? currentTask.status;
+
+    db.prepare(`
+    UPDATE tasks
+    SET title = ?, description = ?, priority = ?, status = ?
+    WHERE id = ?
+  `).run(title, description, priority, status, id);
+
+    return getTaskById(id);
+}
+
+export function deleteTask(id) {
+    const task = getTaskById(id);
 
     if (!task) {
         return undefined;
     }
 
-    if (data.title !== undefined) {
-        task.title = data.title.trim();
-    }
-
-    if (data.description !== undefined) {
-        task.description = data.description.trim();
-    }
-
-    if (data.priority !== undefined) {
-        task.priority = data.priority;
-    }
-
-    if (data.status !== undefined) {
-        task.status = data.status;
-    }
+    db.prepare(`
+    DELETE FROM tasks
+    WHERE id = ?
+  `).run(id);
 
     return task;
-}
-
-export function deleteTask(id) {
-    const index = tasks.findIndex((task) => task.id === id);
-
-    if (index === -1) {
-        return undefined;
-    }
-
-    const deletedTask = tasks.splice(index, 1);
-
-    return deletedTask[0];
 }
