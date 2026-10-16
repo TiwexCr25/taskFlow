@@ -4,25 +4,44 @@ const taskForm = document.querySelector("#task-form");
 const taskList = document.querySelector("#task-list");
 const message = document.querySelector("#message");
 
+
+function showMessage(text, type = "") {
+    message.textContent = text;
+
+    if (type) {
+        message.dataset.type = type;
+    } else {
+        delete message.dataset.type;
+    }
+}
+
+
 // Consultar las tareas al servidor
+
 async function getTasks() {
     try {
-        message.textContent = "Cargando tareas...";
+        showMessage("Cargando tareas...", "loading");
 
         const response = await fetch(API_URL);
 
         if (!response.ok) {
-            throw new Error("No se pudieron consultar las tareas.");
+            throw new Error("No se pudieron cargar las tareas.");
         }
 
         const tasks = await response.json();
 
         renderTasks(tasks);
-        message.textContent = "";
+        showMessage("");
     } catch (error) {
-        message.textContent = error.message;
+        showMessage(
+            error.message === "Failed to fetch"
+                ? "No se pudo conectar con el servidor. Comprueba que esté encendido."
+                : error.message,
+            "error"
+        );
     }
 }
+
 
 // Mostrar las tareas en la interfaz
 
