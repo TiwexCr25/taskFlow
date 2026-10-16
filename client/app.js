@@ -79,12 +79,25 @@ function renderTasks(tasks) {
             const newStatus =
                 task.status === "completed" ? "pending" : "completed";
 
-            await updateTask(task.id, { status: newStatus });
-            await getTasks();
+            try {
+                statusButton.disabled = true;
+                statusButton.textContent = "Actualizando...";
+
+                await updateTask(task.id, { status: newStatus });
+                await getTasks();
+
+                showMessage("Estado de la tarea actualizado.", "success");
+            } catch (error) {
+                showMessage(error.message, "error");
+            } finally {
+                statusButton.disabled = false;
+            }
         });
+
 
         const editButton = document.createElement("button");
         editButton.textContent = "Editar";
+
 
         editButton.addEventListener("click", async () => {
             const newTitle = prompt("Nuevo título:", task.title);
@@ -102,16 +115,30 @@ function renderTasks(tasks) {
                 return;
             }
 
-            await updateTask(task.id, {
-                title: newTitle.trim(),
-                description: newDescription
-            });
+            try {
+                editButton.disabled = true;
+                editButton.textContent = "Guardando...";
 
-            await getTasks();
+                await updateTask(task.id, {
+                    title: newTitle.trim(),
+                    description: newDescription
+                });
+
+                await getTasks();
+
+                showMessage("Tarea editada correctamente.", "success");
+            } catch (error) {
+                showMessage(error.message, "error");
+            } finally {
+                editButton.disabled = false;
+                editButton.textContent = "Editar";
+            }
         });
+
 
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Eliminar";
+
 
         deleteButton.addEventListener("click", async () => {
             const confirmed = confirm(
@@ -122,9 +149,22 @@ function renderTasks(tasks) {
                 return;
             }
 
-            await deleteTask(task.id);
-            await getTasks();
+            try {
+                deleteButton.disabled = true;
+                deleteButton.textContent = "Eliminando...";
+
+                await deleteTask(task.id);
+                await getTasks();
+
+                showMessage("Tarea eliminada correctamente.", "success");
+            } catch (error) {
+                showMessage(error.message, "error");
+            } finally {
+                deleteButton.disabled = false;
+                deleteButton.textContent = "Eliminar";
+            }
         });
+
 
         item.append(
             title,
@@ -194,6 +234,7 @@ async function deleteTask(id) {
 
 
 // Procesar el envío del formulario
+
 taskForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -205,19 +246,29 @@ taskForm.addEventListener("submit", async (event) => {
         priority: formData.get("priority")
     };
 
+    const submitButton = taskForm.querySelector(
+        'button[type="submit"]'
+    );
+
     try {
-        message.textContent = "Creando tarea...";
+        submitButton.disabled = true;
+        submitButton.textContent = "Creando...";
+        showMessage("Creando tarea...", "loading");
 
         await createTask(taskData);
 
         taskForm.reset();
         await getTasks();
 
-        message.textContent = "Tarea creada correctamente.";
+        showMessage("Tarea creada correctamente.", "success");
     } catch (error) {
-        message.textContent = error.message;
+        showMessage(error.message, "error");
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Crear tarea";
     }
 });
+
 
 // Cargar las tareas al abrir la página
 getTasks();
