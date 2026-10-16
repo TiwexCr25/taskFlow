@@ -4,6 +4,7 @@ const taskForm = document.querySelector("#task-form");
 const taskList = document.querySelector("#task-list");
 const message = document.querySelector("#message");
 
+let allTasks = [];
 
 function showMessage(text, type = "") {
     message.textContent = text;
@@ -31,7 +32,8 @@ async function getTasks() {
 
         const tasks = await response.json();
 
-        renderTasks(tasks);
+        allTasks = tasks;
+        renderTasks();
         showMessage("");
         return true;
     } catch (error) {
@@ -50,25 +52,67 @@ async function getTasks() {
 
 // Mostrar las tareas en la interfaz
 
-function renderTasks(tasks) {
+
+function renderTasks() {
     taskList.replaceChildren();
 
-    if (tasks.length === 0) {
+    const statusFilter = document.querySelector("#status-filter").value;
+    const sortOption = document.querySelector("#sort-tasks").value;
+
+    let visibleTasks = [...allTasks];
+
+    // Filtrar por estado
+    if (statusFilter !== "all") {
+        visibleTasks = visibleTasks.filter(
+            (task) => task.status === statusFilter
+        );
+    }
+
+    // Ordenar las tareas
+    const priorityOrder = {
+        high: 3,
+        medium: 2,
+        low: 1
+    };
+
+    visibleTasks.sort((a, b) => {
+        switch (sortOption) {
+            case "oldest":
+                return new Date(a.createdAt) - new Date(b.createdAt);
+
+            case "title":
+                return a.title.localeCompare(b.title, "es", {
+                    sensitivity: "base"
+                });
+
+            case "priority":
+                return priorityOrder[b.priority] - priorityOrder[a.priority];
+
+            case "newest":
+            default:
+                return new Date(b.createdAt) - new Date(a.createdAt);
+        }
+    });
+
+    if (visibleTasks.length === 0) {
         const item = document.createElement("li");
-        item.textContent = "Todavía no tienes tareas.";
+
+        item.textContent = allTasks.length === 0
+            ? "Todavía no tienes tareas."
+            : "No hay tareas que coincidan con estos filtros.";
+
         taskList.append(item);
         return;
     }
 
-    tasks.forEach((task) => {
+    visibleTasks.forEach((task) => {
         const item = document.createElement("li");
 
         const title = document.createElement("h3");
         title.textContent = task.title;
 
         const description = document.createElement("p");
-        description.textContent =
-            task.description || "Sin descripción";
+        description.textContent = task.description || "Sin descripción";
 
         const details = document.createElement("p");
         details.textContent =
@@ -89,7 +133,6 @@ function renderTasks(tasks) {
                 statusButton.textContent = "Actualizando...";
 
                 await updateTask(task.id, { status: newStatus });
-
                 const loaded = await getTasks();
 
                 if (loaded) {
@@ -102,10 +145,8 @@ function renderTasks(tasks) {
             }
         });
 
-
         const editButton = document.createElement("button");
         editButton.textContent = "Editar";
-
 
         editButton.addEventListener("click", async () => {
             const newTitle = prompt("Nuevo título:", task.title);
@@ -132,9 +173,11 @@ function renderTasks(tasks) {
                     description: newDescription
                 });
 
-                await getTasks();
+                const loaded = await getTasks();
 
-                showMessage("Tarea editada correctamente.", "success");
+                if (loaded) {
+                    showMessage("Tarea editada correctamente.", "success");
+                }
             } catch (error) {
                 showMessage(error.message, "error");
             } finally {
@@ -143,10 +186,8 @@ function renderTasks(tasks) {
             }
         });
 
-
         const deleteButton = document.createElement("button");
         deleteButton.textContent = "Eliminar";
-
 
         deleteButton.addEventListener("click", async () => {
             const confirmed = confirm(
@@ -162,9 +203,11 @@ function renderTasks(tasks) {
                 deleteButton.textContent = "Eliminando...";
 
                 await deleteTask(task.id);
-                await getTasks();
+                const loaded = await getTasks();
 
-                showMessage("Tarea eliminada correctamente.", "success");
+                if (loaded) {
+                    showMessage("Tarea eliminada correctamente.", "success");
+                }
             } catch (error) {
                 showMessage(error.message, "error");
             } finally {
@@ -172,7 +215,6 @@ function renderTasks(tasks) {
                 deleteButton.textContent = "Eliminar";
             }
         });
-
 
         item.append(
             title,
@@ -186,6 +228,7 @@ function renderTasks(tasks) {
         taskList.append(item);
     });
 }
+
 
 
 // Crear una tarea mediante POST
@@ -279,6 +322,15 @@ taskForm.addEventListener("submit", async (event) => {
     }
 });
 
+document.querySelector("#status-filter").addEventListener(
+    "change",
+    renderTasks
+);
+
+document.querySelector("#sort-tasks").addEventListener(
+    "change",
+    renderTasks
+);
 
 // Cargar las tareas al abrir la página
 getTasks();

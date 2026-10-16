@@ -39,6 +39,28 @@
 
         <section>
             <h2>Mis tareas</h2>
+            <div class="task-controls">
+                <div>
+                    <label for="status-filter">Filtrar por estado</label>
+                    <select id="status-filter">
+                        <option value="all">Todas las tareas</option>
+                        <option value="pending">Pendientes</option>
+                        <option value="in_progress">En progreso</option>
+                        <option value="completed">Completadas</option>
+                    </select>
+                </div>
+            
+                <div>
+                    <label for="sort-tasks">Ordenar por</label>
+                    <select id="sort-tasks">
+                        <option value="newest">Más recientes</option>
+                        <option value="oldest">Más antiguas</option>
+                        <option value="title">Título (A-Z)</option>
+                        <option value="priority">Prioridad (alta a baja)</option>
+                    </select>
+                </div>
+            </div>
+
             <p id="message" role="status"></p>
             <ul id="task-list"></ul>
         </section>

@@ -111,3 +111,29 @@ button:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+.task-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 16px 0;
+}
+
+.task-controls>div {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 180px;
+}
+
+.task-controls label {
+    font-weight: 600;
+}
+
+.task-controls select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
