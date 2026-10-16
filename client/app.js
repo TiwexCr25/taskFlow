@@ -17,6 +17,21 @@ function showMessage(text, type = "") {
 }
 
 
+async function getErrorMessage(response) {
+    try {
+        const result = await response.json();
+
+        if (result.details && typeof result.details === "object") {
+            return Object.values(result.details).join(" ");
+        }
+
+        return result.error || "Ocurrió un error al procesar la solicitud.";
+    } catch {
+        return "El servidor devolvió una respuesta no válida.";
+    }
+}
+
+
 // Consultar las tareas al servidor
 
 
@@ -232,6 +247,7 @@ function renderTasks() {
 
 
 // Crear una tarea mediante POST
+
 async function createTask(taskData) {
     const response = await fetch(API_URL, {
         method: "POST",
@@ -241,14 +257,14 @@ async function createTask(taskData) {
         body: JSON.stringify(taskData)
     });
 
-    const result = await response.json();
-
     if (!response.ok) {
-        throw new Error(result.error || "No se pudo crear la tarea.");
+        throw new Error(await getErrorMessage(response));
     }
 
-    return result;
+    return response.json();
 }
+
+
 
 
 async function updateTask(id, changes) {
@@ -260,28 +276,27 @@ async function updateTask(id, changes) {
         body: JSON.stringify(changes)
     });
 
-    const result = await response.json();
-
     if (!response.ok) {
-        throw new Error(result.error || "No se pudo actualizar la tarea.");
+        throw new Error(await getErrorMessage(response));
     }
 
-    return result;
+    return response.json();
 }
+
+
 
 async function deleteTask(id) {
     const response = await fetch(`${API_URL}/${id}`, {
         method: "DELETE"
     });
 
-    const result = await response.json();
-
     if (!response.ok) {
-        throw new Error(result.error || "No se pudo eliminar la tarea.");
+        throw new Error(await getErrorMessage(response));
     }
 
-    return result;
+    return response.json();
 }
+
 
 
 // Procesar el envío del formulario
