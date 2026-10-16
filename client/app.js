@@ -18,10 +18,11 @@ function showMessage(text, type = "") {
 
 // Consultar las tareas al servidor
 
-async function getTasks() {
-    try {
-        showMessage("Cargando tareas...", "loading");
 
+async function getTasks() {
+    showMessage("Cargando tareas...", "loading");
+
+    try {
         const response = await fetch(API_URL);
 
         if (!response.ok) {
@@ -32,6 +33,7 @@ async function getTasks() {
 
         renderTasks(tasks);
         showMessage("");
+        return true;
     } catch (error) {
         showMessage(
             error.message === "Failed to fetch"
@@ -39,8 +41,11 @@ async function getTasks() {
                 : error.message,
             "error"
         );
+
+        return false;
     }
 }
+
 
 
 // Mostrar las tareas en la interfaz
@@ -84,9 +89,12 @@ function renderTasks(tasks) {
                 statusButton.textContent = "Actualizando...";
 
                 await updateTask(task.id, { status: newStatus });
-                await getTasks();
 
-                showMessage("Estado de la tarea actualizado.", "success");
+                const loaded = await getTasks();
+
+                if (loaded) {
+                    showMessage("Estado de la tarea actualizado.", "success");
+                }
             } catch (error) {
                 showMessage(error.message, "error");
             } finally {
@@ -256,11 +264,13 @@ taskForm.addEventListener("submit", async (event) => {
         showMessage("Creando tarea...", "loading");
 
         await createTask(taskData);
-
         taskForm.reset();
-        await getTasks();
 
-        showMessage("Tarea creada correctamente.", "success");
+        const loaded = await getTasks();
+
+        if (loaded) {
+            showMessage("Tarea creada correctamente.", "success");
+        }
     } catch (error) {
         showMessage(error.message, "error");
     } finally {
