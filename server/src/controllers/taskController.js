@@ -2,7 +2,8 @@ import {
     getAllTasks,
     getTaskById,
     createTask as saveTask,
-    updateTask as saveTaskChanges
+    updateTask as saveTaskChanges,
+    deleteTask as removeTask
 } from "../services/taskService.js";
 
 export function getTasks(req, res) {
@@ -110,4 +111,27 @@ export function putTask(req, res) {
     }
 
     res.json(task);
+}
+
+export function deleteTaskController(req, res) {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({
+            error: "El ID debe ser un número entero positivo."
+        });
+    }
+
+    const task = removeTask(id);
+
+    if (!task) {
+        return res.status(404).json({
+            error: "Tarea no encontrada."
+        });
+    }
+
+    res.json({
+        message: "Tarea eliminada correctamente.",
+        task
+    });
 }

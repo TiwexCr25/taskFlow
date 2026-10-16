@@ -49,3 +49,15 @@ export function updateTask(id, data) {
 
     return task;
 }
+
+export function deleteTask(id) {
+    const index = tasks.findIndex((task) => task.id === id);
+
+    if (index === -1) {
+        return undefined;
+    }
+
+    const deletedTask = tasks.splice(index, 1);
+
+    return deletedTask[0];
+}
