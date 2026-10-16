@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow</title>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./app.js" defer></script>
+</head>
+
+<body>
+    <main class="container">
+        <header>
+            <h1>TaskFlow</h1>
+            <p>Organiza tus tareas y mantén tu progreso.</p>
+        </header>
+
+        <section>
+            <h2>Nueva tarea</h2>
+
+            <form id="task-form">
+                <label for="title">Título</label>
+                <input id="title" name="title" type="text" placeholder="¿Qué necesitas hacer?" required>
+
+                <label for="description">Descripción</label>
+                <textarea id="description" name="description" placeholder="Detalles opcionales"></textarea>
+
+                <label for="priority">Prioridad</label>
+                <select id="priority" name="priority">
+                    <option value="low">Baja</option>
+                    <option value="medium" selected>Media</option>
+                    <option value="high">Alta</option>
+                </select>
+
+                <button type="submit">Crear tarea</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Mis tareas</h2>
+            <p id="message" role="status"></p>
+            <ul id="task-list"></ul>
+        </section>
+    </main>
+</body>
+
+</html>
