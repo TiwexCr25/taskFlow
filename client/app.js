@@ -17,6 +17,15 @@ function showMessage(text, type = "") {
 }
 
 
+function getFriendlyErrorMessage(error) {
+    if (error instanceof TypeError) {
+        return "No se pudo conectar con el servidor. Comprueba que esté encendido e inténtalo de nuevo.";
+    }
+
+    return error.message || "Ocurrió un error inesperado.";
+}
+
+
 async function getErrorMessage(response) {
     try {
         const result = await response.json();
@@ -51,16 +60,12 @@ async function getTasks() {
         renderTasks();
         showMessage("");
         return true;
-    } catch (error) {
-        showMessage(
-            error.message === "Failed to fetch"
-                ? "No se pudo conectar con el servidor. Comprueba que esté encendido."
-                : error.message,
-            "error"
-        );
-
+    }
+    catch (error) {
+        showMessage(getFriendlyErrorMessage(error), "error");
         return false;
     }
+
 }
 
 
@@ -154,7 +159,7 @@ function renderTasks() {
                     showMessage("Estado de la tarea actualizado.", "success");
                 }
             } catch (error) {
-                showMessage(error.message, "error");
+                showMessage(getFriendlyErrorMessage(error), "error");
             } finally {
                 statusButton.disabled = false;
             }
@@ -194,7 +199,7 @@ function renderTasks() {
                     showMessage("Tarea editada correctamente.", "success");
                 }
             } catch (error) {
-                showMessage(error.message, "error");
+                showMessage(getFriendlyErrorMessage(error), "error");
             } finally {
                 editButton.disabled = false;
                 editButton.textContent = "Editar";
@@ -224,7 +229,7 @@ function renderTasks() {
                     showMessage("Tarea eliminada correctamente.", "success");
                 }
             } catch (error) {
-                showMessage(error.message, "error");
+                showMessage(getFriendlyErrorMessage(error), "error");
             } finally {
                 deleteButton.disabled = false;
                 deleteButton.textContent = "Eliminar";
@@ -330,7 +335,7 @@ taskForm.addEventListener("submit", async (event) => {
             showMessage("Tarea creada correctamente.", "success");
         }
     } catch (error) {
-        showMessage(error.message, "error");
+        showMessage(getFriendlyErrorMessage(error), "error");
     } finally {
         submitButton.disabled = false;
         submitButton.textContent = "Crear tarea";
